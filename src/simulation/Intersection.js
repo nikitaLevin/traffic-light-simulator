@@ -69,7 +69,6 @@ export class Intersection {
   }
 
   update(delta, mode, intensity) {
-    // Обновляем светофоры
     this.lights.horizontal.update(delta);
     this.lights.vertical.update(delta);
 
@@ -77,13 +76,24 @@ export class Intersection {
       this.updateAdaptive();
     }
 
-    // Спавним машины
     this.spawnCar(intensity);
 
-    // Обновляем машины
     this.cars.forEach(car => {
       const green = this.isGreenFor(car.direction);
-      car.update(delta, green);
+
+      // Машины той же полосы впереди
+      const carsAhead = this.cars.filter(other => {
+        if (other === car || other.direction !== car.direction) return false;
+        switch (car.direction) {
+          case 'right': return other.x > car.x;
+          case 'left': return other.x < car.x;
+          case 'down': return other.y > car.y;
+          case 'up': return other.y < car.y;
+          default: return false;
+        }
+      });
+
+      car.update(delta, green, carsAhead);
 
       if (car.waiting) {
         this.stats.totalWaitTime += delta;
@@ -96,10 +106,8 @@ export class Intersection {
       }
     });
 
-    // Удаляем машины которые уехали
     this.cars = this.cars.filter(c => !c.isOutOfBounds());
 
-    // Обновляем статистику
     const waiting = this.cars.filter(c => c.waiting).length;
     if (waiting > this.stats.maxQueue) this.stats.maxQueue = waiting;
     if (this.stats.waitingSamples > 0) {
