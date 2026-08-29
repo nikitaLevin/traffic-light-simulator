@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/traffic-light-simulator/static/css/main.d8106a78.css",
+    "main.js": "/traffic-light-simulator/static/js/main.51124df5.js",
+    "static/js/453.e046748b.chunk.js": "/traffic-light-simulator/static/js/453.e046748b.chunk.js",
+    "index.html": "/traffic-light-simulator/index.html",
+    "main.d8106a78.css.map": "/traffic-light-simulator/static/css/main.d8106a78.css.map",
+    "main.51124df5.js.map": "/traffic-light-simulator/static/js/main.51124df5.js.map",
+    "453.e046748b.chunk.js.map": "/traffic-light-simulator/static/js/453.e046748b.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d8106a78.css",
+    "static/js/main.51124df5.js"
+  ]
+}
