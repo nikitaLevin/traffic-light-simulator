@@ -22,8 +22,7 @@ export class Intersection {
       avgWaitTime: 0,
       maxQueue: 0,
       carsPassedThrough: 0,
-      totalWaitTime: 0,
-      waitingSamples: 0,
+      completedWaitTimes: [],
     };
   }
 
@@ -81,7 +80,6 @@ export class Intersection {
     this.cars.forEach(car => {
       const green = this.isGreenFor(car.direction);
 
-      // Машины той же полосы впереди
       const carsAhead = this.cars.filter(other => {
         if (other === car || other.direction !== car.direction) return false;
         switch (car.direction) {
@@ -93,16 +91,24 @@ export class Intersection {
         }
       });
 
+      const wasWaiting = car.waiting;
       car.update(delta, green, carsAhead);
 
+      // Трекаем время ожидания каждой машины
       if (car.waiting) {
-        this.stats.totalWaitTime += delta;
-        this.stats.waitingSamples++;
+        car.waitTime = (car.waitTime || 0) + delta;
       }
 
       if (car.isOutOfBounds() && !car.passed) {
         car.passed = true;
         this.stats.carsPassedThrough++;
+        if (car.waitTime > 0) {
+          this.stats.completedWaitTimes.push(car.waitTime);
+          // Держим только последние 50 машин
+          if (this.stats.completedWaitTimes.length > 50) {
+            this.stats.completedWaitTimes.shift();
+          }
+        }
       }
     });
 
@@ -110,8 +116,10 @@ export class Intersection {
 
     const waiting = this.cars.filter(c => c.waiting).length;
     if (waiting > this.stats.maxQueue) this.stats.maxQueue = waiting;
-    if (this.stats.waitingSamples > 0) {
-      this.stats.avgWaitTime = this.stats.totalWaitTime / this.stats.waitingSamples;
+
+    if (this.stats.completedWaitTimes.length > 0) {
+      const sum = this.stats.completedWaitTimes.reduce((a, b) => a + b, 0);
+      this.stats.avgWaitTime = sum / this.stats.completedWaitTimes.length;
     }
   }
 
@@ -184,6 +192,6 @@ export class Intersection {
       avgWaitTime: this.stats.avgWaitTime,
       maxQueue: this.stats.maxQueue,
       carsPassedThrough: this.stats.carsPassedThrough,
-    };
-  }
+  };
+}
 }
